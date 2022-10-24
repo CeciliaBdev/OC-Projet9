@@ -32,7 +32,22 @@ bill-app/
 
 ### étape 1 - Lancer le backend :
 
-Suivez les indications dans le README du projet backend.
+## Installer les dépendances du projet :
+
+```
+npm install
+```
+
+## Lancer l'API :
+
+```
+npm run run:dev
+```
+
+## Accéder à l'API :
+
+L'api est accessible sur le port `5678` en local, c'est à dire `http://localhost:5678`
+
 
 ### étape 2 - Lancer le frontend :
 
