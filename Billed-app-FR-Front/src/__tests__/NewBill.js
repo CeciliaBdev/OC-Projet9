@@ -13,6 +13,7 @@ import router from '../app/Router.js'
 import BillsUI from '../views/BillsUI.js'
 import '@testing-library/jest-dom'
 
+// appel des données mockées
 jest.mock('../app/store', () => mockStore)
 
 describe('Given I am connected as an employee', () => {
@@ -350,109 +351,52 @@ describe('Given I am connected as an employee', () => {
   })
 })
 
-// test d'intégration - POST -
-// création data
+// creation data
+// Test d'intégration POST
 describe('Given I am connected as an employee', () => {
   describe('When I add a new bill', () => {
-    test('Then a new bill is created', () => {
+    test('fetches bills from mock API POST', async () => {
+      const spy = jest.spyOn(mockStore.bills(), 'update')
+      // environnement
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem(
+        'user',
+        JSON.stringify({
+          type: 'Employee',
+          email: 'a@a',
+        })
+      )
       document.body.innerHTML = NewBillUI()
-      const inputData = {
-        type: 'Transports',
-        name: 'Test',
-        datepicker: '2022-06-02',
-        amount: '53',
-        vat: '10',
-        pct: '20',
-        commentary: 'Test',
-        file: new File(['test'], 'test.png', { type: 'image/png' }),
-      }
-
-      const formNewBill = screen.getByTestId('form-new-bill')
-      const inputName = screen.getByTestId('expense-name')
-      const inputType = screen.getByTestId('expense-type')
-      const inputDate = screen.getByTestId('datepicker')
-      const inputAmount = screen.getByTestId('amount')
-      const inputVat = screen.getByTestId('vat')
-      const inputPct = screen.getByTestId('pct')
-      const inputComment = screen.getByTestId('commentary')
-      const inputFile = screen.getByTestId('file')
-
-      fireEvent.change(inputType, {
-        target: { value: inputData.type },
-      })
-      expect(inputType.value).toBe(inputData.type)
-
-      fireEvent.change(inputName, {
-        target: { value: inputData.name },
-      })
-      expect(inputName.value).toBe(inputData.name)
-
-      fireEvent.change(inputDate, {
-        target: { value: inputData.datepicker },
-      })
-      expect(inputDate.value).toBe(inputData.datepicker)
-
-      fireEvent.change(inputAmount, {
-        target: { value: inputData.amount },
-      })
-      expect(inputAmount.value).toBe(inputData.amount)
-
-      fireEvent.change(inputVat, {
-        target: { value: inputData.vat },
-      })
-      expect(inputVat.value).toBe(inputData.vat)
-
-      fireEvent.change(inputPct, {
-        target: { value: inputData.pct },
-      })
-      expect(inputPct.value).toBe(inputData.pct)
-
-      fireEvent.change(inputComment, {
-        target: { value: inputData.commentary },
-      })
-      expect(inputComment.value).toBe(inputData.commentary)
-
-      userEvent.upload(inputFile, inputData.file)
-      expect(inputFile.files[0]).toStrictEqual(inputData.file)
-      expect(inputFile.files).toHaveLength(1)
-
-      Object.defineProperty(window, 'localStorage', {
-        value: {
-          getItem: jest.fn(() =>
-            JSON.stringify({
-              email: 'email@test.com',
-            })
-          ),
-        },
-        writable: true,
-      })
-
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname })
       }
-
       const newBill = new NewBill({
         document,
         onNavigate,
+        store: mockStore,
         localStorage: window.localStorage,
       })
-
-      const handleSubmit = jest.fn(newBill.handleSubmit)
-      formNewBill.addEventListener('submit', handleSubmit)
-      fireEvent.submit(formNewBill)
+      const form = screen.getByTestId('form-new-bill')
+      // simu mock
+      const handleSubmit = jest.fn((e) => newBill.handleSubmit(e))
+      form.addEventListener('click', handleSubmit)
+      fireEvent.click(form)
       expect(handleSubmit).toHaveBeenCalled()
+      expect(spy).toHaveBeenCalled()
+      const billsPage = screen.getByTestId('tbody')
+      expect(billsPage).toBeInTheDocument()
     })
-    test('Then it fails with a 404 message error', async () => {
-      const html = BillsUI({ error: 'Erreur 404' })
-      document.body.innerHTML = html
-      const message = await screen.getByText(/Erreur 404/)
-      expect(message).toBeTruthy()
-    })
-    test('Then it fails with a 500 message error', async () => {
-      const html = BillsUI({ error: 'Erreur 500' })
-      document.body.innerHTML = html
-      const message = await screen.getByText(/Erreur 500/)
-      expect(message).toBeTruthy()
-    })
+  })
+  test('Then it fails with a 404 message error', async () => {
+    const html = BillsUI({ error: 'Erreur 404' })
+    document.body.innerHTML = html
+    const message = await screen.getByText(/Erreur 404/)
+    expect(message).toBeTruthy()
+  })
+  test('Then it fails with a 500 message error', async () => {
+    const html = BillsUI({ error: 'Erreur 500' })
+    document.body.innerHTML = html
+    const message = await screen.getByText(/Erreur 500/)
+    expect(message).toBeTruthy()
   })
 })
