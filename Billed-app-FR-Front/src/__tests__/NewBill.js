@@ -18,6 +18,7 @@ jest.mock('../app/store', () => mockStore)
 describe('Given I am connected as an employee', () => {
   describe('When I am on NewBill Page', () => {
     // pré environnement
+    // beforeEach = je charge l'environnement pour l'ensemble de mon describe - evite les doublons
     beforeEach(() => {
       Object.defineProperty(window, 'localStorage', { value: localStorageMock })
       Object.defineProperty(window, 'location', {
@@ -45,6 +46,7 @@ describe('Given I am connected as an employee', () => {
   })
 
   describe('When I want to click on button change file', () => {
+    // beforeEach = je charge l'environnement pour l'ensemble de mon describe - evite les doublons
     beforeEach(() => {
       Object.defineProperty(window, 'localStorage', { value: localStorageMock })
       Object.defineProperty(window, 'location', {
@@ -83,20 +85,20 @@ describe('Given I am connected as an employee', () => {
     })
 
     test("Then the button 'Envoyer' is enable ", () => {
-      // pré environnement
-      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-      window.localStorage.setItem(
-        'user',
-        JSON.stringify({
-          type: 'Employee',
-        })
-      )
-      const root = document.createElement('div')
-      root.setAttribute('id', 'root')
-      document.body.append(root)
-      router()
-      window.onNavigate(ROUTES_PATH.NewBill)
-      document.body.innerHTML = NewBillUI()
+      // doublon
+      // Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      // window.localStorage.setItem(
+      //   'user',
+      //   JSON.stringify({
+      //     type: 'Employee',
+      //   })
+      // )
+      // const root = document.createElement('div')
+      // root.setAttribute('id', 'root')
+      // document.body.append(root)
+      // router()
+      // window.onNavigate(ROUTES_PATH.NewBill)
+      // document.body.innerHTML = NewBillUI()
 
       const newBillObject2 = new NewBill({
         document,
@@ -147,20 +149,21 @@ describe('Given I am connected as an employee', () => {
       expect(newBill.validFile).not.toBeTruthy()
     })
     test("Then the button 'Envoyer' is disable ", () => {
-      // pré environnement
-      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-      window.localStorage.setItem(
-        'user',
-        JSON.stringify({
-          type: 'Employee',
-        })
-      )
-      const root = document.createElement('div')
-      root.setAttribute('id', 'root')
-      document.body.append(root)
-      router()
-      window.onNavigate(ROUTES_PATH.NewBill)
-      document.body.innerHTML = NewBillUI()
+      // doublon
+      // // pré environnement
+      // Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      // window.localStorage.setItem(
+      //   'user',
+      //   JSON.stringify({
+      //     type: 'Employee',
+      //   })
+      // )
+      // const root = document.createElement('div')
+      // root.setAttribute('id', 'root')
+      // document.body.append(root)
+      // router()
+      // window.onNavigate(ROUTES_PATH.NewBill)
+      // document.body.innerHTML = NewBillUI()
 
       const newBillObject = new NewBill({
         document,
