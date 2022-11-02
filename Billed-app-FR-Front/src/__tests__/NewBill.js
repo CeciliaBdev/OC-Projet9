@@ -42,7 +42,7 @@ describe('Given I am connected as an employee', () => {
       const html = NewBillUI({})
       document.body.innerHTML = html
       const contentTitle = screen.getAllByText('Envoyer une note de frais')
-      expect(contentTitle).toBeTruthy
+      expect(contentTitle).toBeTruthy()
     })
   })
 
@@ -189,6 +189,7 @@ describe('Given I am connected as an employee', () => {
     })
   })
 
+  // bon format - je peux envoyer ma note de frais
   describe('When the form is correct and I click on submit button', () => {
     test('Then I should post new Bill ticket', async () => {
       Object.defineProperty(window, 'localStorage', { value: localStorageMock })
@@ -200,6 +201,8 @@ describe('Given I am connected as an employee', () => {
       document.body.innerHTML = `<div id="root"></div>`
       router()
       // we have to mock navigation to test it
+      const html = NewBillUI()
+      document.body.innerHTML = html
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname })
       }
@@ -210,147 +213,32 @@ describe('Given I am connected as an employee', () => {
         localStorage: window.localStorage,
       })
 
-      // Define inputs values
-      const inputData = {
-        type: 'Transports',
-        name: 'TGV Marseille-Paris',
-        amount: '53',
-        date: '2020-04-13',
-        vat: 10,
-        pct: 20,
-        file: new File(['img'], 'billet.png', { type: 'image/png' }),
-        commentary: 'billet de train sncf',
-        status: 'pending',
-      }
-
-      // éléments de la page récupérés
-      const inputType = screen.getByTestId('expense-type')
-      const inputName = screen.getByTestId('expense-name')
-      const inputDate = screen.getByTestId('datepicker')
-      const inputAmmount = screen.getByTestId('amount')
-      const inputVat = screen.getByTestId('vat')
-      const inputPct = screen.getByTestId('pct')
-      const inputComment = screen.getByTestId('commentary')
-      const inputFile = screen.getByTestId('file')
-      const form = screen.getByTestId('form-new-bill')
-
-      // simulation valeurs
-      fireEvent.change(inputType, { target: { value: inputData.type } })
-      fireEvent.change(inputName, { target: { value: inputData.name } })
-      fireEvent.change(inputDate, { target: { value: inputData.date } })
-      fireEvent.change(inputAmmount, { target: { value: inputData.amount } })
-      fireEvent.change(inputVat, { target: { value: inputData.vat } })
-      fireEvent.change(inputPct, { target: { value: inputData.pct } })
-      fireEvent.change(inputComment, {
-        target: { value: inputData.commentary },
+      //simu charge la pj
+      const chargeFile = jest.fn((e) => newBill.handleChangeFile(e))
+      const file = screen.getByTestId('file')
+      const test = new File(["c'est un test"], 'test.jpg', {
+        //condition du test
+        type: 'image/jpg',
       })
-      userEvent.upload(inputFile, inputData.file)
+      file.addEventListener('change', chargeFile)
+      fireEvent.change(file, { target: { files: [test] } })
+      expect(chargeFile).toHaveBeenCalled()
+      expect(file.files[0]).toStrictEqual(test)
 
-      const handleSubmit = jest.fn(newBill.handleSubmit)
-      form.addEventListener('submit', handleSubmit)
-      fireEvent.submit(form)
-      expect(handleSubmit).toHaveBeenCalled()
+      const formNewBill = screen.getByTestId('form-new-bill')
+      expect(formNewBill).toBeTruthy()
 
-      // // Submit form
-      // const handleSubmit = jest.fn((e) => newBill.handleSubmit(e))
-      // form.addEventListener('submit', handleSubmit)
-
-      // await waitFor(() => {
-      //   userEvent.upload(inputFile, inputData.file)
-      // })
-      // fireEvent.submit(form)
-      // expect(handleSubmit).toHaveBeenCalled()
-
-      // Verification validité
-      expect(inputType.validity.valid).toBeTruthy()
-      expect(inputName.validity.valid).toBeTruthy()
-      expect(inputDate.validity.valid).toBeTruthy()
-      expect(inputAmmount.validity.valid).toBeTruthy()
-      expect(inputVat.validity.valid).toBeTruthy()
-      expect(inputPct.validity.valid).toBeTruthy()
-      expect(inputComment.validity.valid).toBeTruthy()
-      expect(inputFile.files[0]).toBeDefined()
+      const envoiNewBill = jest.fn((e) => newBill.handleSubmit(e))
+      formNewBill.addEventListener('submit', envoiNewBill)
+      fireEvent.submit(formNewBill)
+      expect(envoiNewBill).toHaveBeenCalled()
     })
 
     test('Then it should be render Bills Page', () => {
       expect(screen.getAllByText('Mes notes de frais')).toBeTruthy()
     })
   })
-
-  describe('When the form is incorrect format and I click on submit button', () => {
-    test('Then I should have an error HTML validator form', async () => {
-      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-      Object.defineProperty(window, 'location', {
-        value: { hash: ROUTES_PATH['NewBill'] },
-      })
-
-      window.localStorage.setItem('user', JSON.stringify({ type: 'Employee' }))
-      document.body.innerHTML = `<div id="root"></div>`
-      router()
-      const onNavigate = (pathname) => {
-        document.body.innerHTML = ROUTES({ pathname })
-      }
-      const newBill = new NewBill({
-        document,
-        onNavigate,
-        store: mockStore,
-        localStorage: window.localStorage,
-      })
-
-      // test erreur dans la date
-      const inputData = {
-        type: 'Transports',
-        name: 'TGV Marseille-Paris',
-        amount: '53',
-        date: 'test incorrect date',
-        vat: 10,
-        pct: 20,
-        file: new File(['img'], 'billet.png', { type: 'image/png' }),
-        commentary: 'billet de train sncf',
-        status: 'pending',
-      }
-
-      const inputType = screen.getByTestId('expense-type')
-      const inputName = screen.getByTestId('expense-name')
-      const inputDate = screen.getByTestId('datepicker')
-      const inputAmmount = screen.getByTestId('amount')
-      const inputVat = screen.getByTestId('vat')
-      const inputPct = screen.getByTestId('pct')
-      const inputComment = screen.getByTestId('commentary')
-      const inputFile = screen.getByTestId('file')
-      const form = screen.getByTestId('form-new-bill')
-
-      fireEvent.change(inputType, { target: { value: inputData.type } })
-      fireEvent.change(inputName, { target: { value: inputData.name } })
-      fireEvent.change(inputDate, { target: { value: inputData.date } })
-      fireEvent.change(inputAmmount, { target: { value: inputData.amount } })
-      fireEvent.change(inputVat, { target: { value: inputData.vat } })
-      fireEvent.change(inputPct, { target: { value: inputData.pct } })
-      fireEvent.change(inputComment, {
-        target: { value: inputData.commentary },
-      })
-      await waitFor(() => {
-        userEvent.upload(inputFile, inputData.file)
-      })
-
-      // // Simulation formulaire soumis
-      // const handleSubmit = jest.fn((e) => newBill.handleSubmit(e))
-      // form.addEventListener('submit', handleSubmit)
-      // fireEvent.submit(form)
-
-      // expect(handleSubmit).toHaveBeenCalled()
-      // // verif erreur date
-      // expect(inputDate.validity.valid).not.toBeTruthy()
-
-      const handleSubmit = jest.fn(newBill.handleSubmit)
-      form.addEventListener('submit', handleSubmit)
-      fireEvent.submit(form)
-      expect(handleSubmit).toHaveBeenCalled()
-      expect(inputDate.validity.valid).not.toBeTruthy()
-    })
-  })
 })
-
 // creation data
 // Test d'intégration POST
 describe('Given I am connected as an employee', () => {
